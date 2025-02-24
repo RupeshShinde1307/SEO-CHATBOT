@@ -1,0 +1,142 @@
+SEO for 2025 by Daniel Forey Carter
+
+✅ Create content with a purpose so that it can do better across other channels
+
+✅ Split your content strategy to half maintaining what you have and half on new content
+
+✅ Identify needs and content prioritisation and potential media embeddings prior to content creation
+
+✅ Capitalize on less is more by using information compression - people consume more short form content than they do long form
+
+✅ Pay attention to content NLP, sentiment, tone of voice, writing perspective
+
+✅ Consider a integrated, vetted UGC strategy with strict content control and management, this is good for community building
+
+✅ Create more media content to support your text content i.e. short form video, interactive tools, sharp high quality images, charts, tables, things other than just text 
+
+✅ Focus heavily on UX ensuring that design is steered towards positive engagement signals - effectively data collection and aggregation i.e. heat mapping/click and scroll maps, funnel/flow is used to shape and improve UX
+
+✅ Make content more digestible with dynamic content sections, make it faster and easier for people to get what they want 
+
+✅ Shape your internal links based on data collected from behaviour flow and not just in link equity distribution 
+
+✅ Maintain EEAT for best practice, remember Google algos are taking a lot into consideration with brand and behaviour, whilst EEAT alone may not add much value throwing it into the mix with everything else increases the probability of benefiting from it
+
+✅ Control what content you actually have indexed - things you can typically address are:
+
+⏩ Expire content when demand disappears - things like events can trend up until they are no longer current - content can be archived with noindex, follow or culled (410 if no external links, 301 if external links and traffic exist)
+
+⏩ Pagination, certain category types i.e. blog categories where there isn't an aggregated demand, tag URLs can be noindex follow
+
+⏩ Content that's aimed at something the business has done i.e. internal press where there's no external demand can also be noindex, follow
+
+⏩ Content that's been obliterated by updates  is less likely to recover, rewrite, change the URL and reinstate providing demand and scope remains
+
+⏩ Content that's suffered systemic decline over time is also less likely to recover, if it dies, cull, 410 the URL and reinstate an amended updated version on a new URL - this is a scale exercise 
+
+⏩ Content indexable not being indexed where sufficient internal links exist is usually either a site wide/domain trust issue or a content value issue - it's all based on proportion, if your domain has a history of publishing lots of content where lots of content was perceived low or non value - switching to publishing value content doesn't solve the original issue for a while 
+
+✅ Give people a people first experience - all these AI gurus spouting AI chat bots when in reality they fuck people off to the endth degree 
+
+✅ Build brand
+
+
+
+
+
+How to be an SEO minimalist?
+
+No hacks, no jargon and no complicated strategy.
+
+Just follow principles on what searchers want:
+- Ensure the site is technically sound, speedy and easy to use
+- Create content that covers topics potential customers are searching for that may lead to sign ups or sales
+- Also create content their audience will enjoy, share and link to (treat content like a product)
+- Build less but quality amount of backlinks every month
+
+
+
+
+
+SEO has been dying since the early 2000s.
+
+Some notable "deaths" include:
+- Web 3.0
+- Google Ads
+- Social media
+- Voice assistants
+- Featured snippets
+- Zero-click searches
+- Every Google update
+- TikTok "the new search"
+- ChatGPT replacing Google
+- AI Overviews in result pages
+
+Here's the reality:
+- 15% of searches are brand new
+- Searches grow by ~10% every year
+- There are 8.5B Google searches daily
+- SEO is a $100B+ industry (and growing)
+- Search engines and SEO will always evolve
+- Search habits will take a long time to change
+
+Block out the noise!
+
+Continue learning, consistently repeating the fundamentals, and adapting to new technologies.
+
+SEO is only “dead” for those who don't take actions!
+
+
+
+
+
+
+
+
+99% Of SEO Goes Wrong
+(Not because the strategy)
+If you want to succeed then:
+
+Jairo Guerrero says, here are my 10 non-negotiables:
+
+1. Multi-channel approach	
+→ For B2B: LinkedIn pipeline of content = authority + reach
+"SEO is not SEO, it is always SEO + [side_channel]"
+
+2. Reasonable budget	
+→ Simple calculation: SEO Budget = (SEO Expected Revenue * 0.20)
+"Do not solve big issues with tiny money"
+
+3. Multimedia content	
+→ Create Infographics, PDFs, templates, tools, etc
+"With AI, text has become a comodity in marketing"
+
+4. AI Automation	
+→ 80% of the SEO is data. Data analysis can be automated
+"AI generated content Processes > Traffic > Revenue"
+
+5. Technical SEO		
+→ Tech SEO ain't complex but very much needed	
+"You won't rank if your site is broken"	
+
+6. Good authors		
+→ You need authors with a strong online footprint	
+"Good writing is not enough"	
+
+7. Repurposing		
+→ Transform all SEO content into LN posts, newsletters, videos...	
+"Do not waste your SEO content only on SEO"	
+
+8. Business mindset		
+→ SEO is business, do not ever forget about that	
+"Strategy > Processes > Traffic > Revenue"	
+
+9. Consistency		
+→ Build long-term content systems, avoid the performance trap	
+"What's the point of doing SEO for a month?"	
+
+10. Patience		
+→ Organic traffic is a marathon	
+With patience you will win
+
+
