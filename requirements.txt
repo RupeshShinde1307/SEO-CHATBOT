@@ -1,37 +1,18 @@
-# Streamlit (Core Framework)
+# Updated requirements.txt
 streamlit==1.28.0
-
-# LangChain (For Document Loading, Vectorization, and Chains)
 langchain==0.1.9
 langchain-community==0.0.32
-
-# Sentence Transformers (For Embeddings)
 sentence-transformers==2.2.2
-
-# HuggingFace Libraries (For LLMs and API Integration)
 huggingface_hub==0.20.3
 transformers==4.36.2
-torch==2.1.0  # PyTorch for HuggingFace models
-
-# PDF and Document Parsing Libraries
-PyPDF2==3.0.1
-pymupdf==1.23.0
-pdfminer.six==20221105
-unstructured==0.11.1  # Alternative document loader
-
-# FAISS (For Vector Store)
+torch==2.3.1  # Updated PyTorch version
 faiss-cpu==1.7.4
-
-# Image Processing (For OCR with Tesseract)
 opencv-python==4.8.1.78
 pytesseract==0.3.10
-
-# Data Handling
-pandas==2.1.4
-
-# Environment Management
+pdfminer.six==20221105
+pymupdf==1.23.0
+unstructured==0.11.1
 python-dotenv==1.0.0
-
-# Additional Utilities
+pandas==2.1.4
 numpy==1.26.4
 requests==2.31.0
