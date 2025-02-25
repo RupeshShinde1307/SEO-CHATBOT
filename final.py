@@ -237,7 +237,16 @@ def generate_response(prompt, vectorstore, llm):
 
 def main():
     """Runs the Streamlit chatbot application."""
-    st.title("🧠 Brainmines SEO Chatbot - Your AI Assistant for SEO Queries 🚀")
+    # Use columns to align the logo and title
+    col1, col2 = st.columns([3, 7])  # Adjust column widths as needed
+    
+    with col1:
+        # Add a small logo at the top-left corner
+        st.image("logo2.jpg", caption=None, use_container_width=True)  # Updated to use_container_width
+    
+    with col2:
+        # Add the app title next to the logo
+        st.title("🧠 Brainmines SEO Chatbot  Your AI Assistant for SEO Queries 🚀")
     
     # ✅ Load vector store and LLM
     vectorstore = get_vectorstore()
