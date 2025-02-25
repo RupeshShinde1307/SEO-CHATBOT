@@ -236,17 +236,14 @@ def extract_text_from_image(image_path):
 def vectorize_documents():
     logging.info("Starting document vectorization...")
     documents = []
-
     # Load PDFs
     pdf_loader = DirectoryLoader(UPLOAD_FOLDER, glob="*.pdf", loader_cls=PyPDFLoader)
     documents.extend(pdf_loader.load())
-
     # Load DOCX files
     for file in Path(UPLOAD_FOLDER).glob("*.docx"):
         doc = Document(file)
         text = "\n".join([para.text for para in doc.paragraphs])
         documents.append(LangchainDocument(page_content=text, metadata={"source": file.name}))
-
     # Load PPTX files
     for file in Path(UPLOAD_FOLDER).glob("*.pptx"):
         prs = Presentation(file)
@@ -254,18 +251,15 @@ def vectorize_documents():
             text = "\n".join([shape.text for shape in slide.shapes if hasattr(shape, "text")])
             if text.strip():
                 documents.append(LangchainDocument(page_content=text, metadata={"source": file.name, "slide": i + 1}))
-
     # Load images (JPG and PNG)
     for image_file in Path(UPLOAD_FOLDER).rglob("*.jpg"):
         text = extract_text_from_image(image_file)
         if text:
             documents.append(LangchainDocument(page_content=text, metadata={"source": image_file.name}))
-
     for image_file in Path(UPLOAD_FOLDER).rglob("*.png"):
         text = extract_text_from_image(image_file)
         if text:
             documents.append(LangchainDocument(page_content=text, metadata={"source": image_file.name}))
-
     if documents:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
         text_chunks = text_splitter.split_documents(documents)
@@ -288,22 +282,18 @@ def upload_files():
         progress_bar = st.progress(0)
         total_files = len(uploaded_files)
         successful_uploads = 0
-
         for i, uploaded_file in enumerate(uploaded_files):
             file_path = os.path.join(UPLOAD_FOLDER, uploaded_file.name)
-
             # Check if the file already exists
             if os.path.exists(file_path):
                 st.warning(f"⚠️ File '{uploaded_file.name}' already exists. Skipping upload.")
                 continue
-
             # Save the file
             with open(file_path, "wb") as f:
                 f.write(uploaded_file.getbuffer())
             successful_uploads += 1
             progress_bar.progress((i + 1) / total_files)
             st.success(f"✅ {uploaded_file.name} uploaded successfully! ({successful_uploads}/{total_files})")
-
         if successful_uploads > 0:
             # Start vectorization
             st.info("Vectorization started. Please wait...")
@@ -323,29 +313,28 @@ def manage_files():
     if files:
         file_data = [
             {
+                "No.": index + 1,  # Add row number
                 "File Name": file,
                 "Type": file.split(".")[-1].upper(),
                 "Size (KB)": round(os.path.getsize(os.path.join(UPLOAD_FOLDER, file)) / 1024, 2),
             }
-            for file in files
+            for index, file in enumerate(files)
         ]
         df = pd.DataFrame(file_data)
-        st.dataframe(df, use_container_width=True)
-        selected_file = st.selectbox("Select a file to manage", files)
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Delete Selected File"):
-                os.remove(os.path.join(UPLOAD_FOLDER, selected_file))
-                st.error(f"❌ {selected_file} deleted successfully!")
-                st.rerun()
-        with col2:
-            with open(os.path.join(UPLOAD_FOLDER, selected_file), "rb") as f:
-                st.download_button(
-                    label="Download Selected File",
-                    data=f,
-                    file_name=selected_file,
-                    mime="application/octet-stream",
-                )
+        
+        # Display files with delete buttons
+        st.write("Uploaded Files:")
+        for index, row in df.iterrows():
+            col1, col2, col3 = st.columns([1, 4, 1])  # Adjust column widths
+            with col1:
+                st.write(row["No."])  # Display row number
+            with col2:
+                st.write(f"{row['File Name']} ({row['Type']}, {row['Size (KB)']} KB)")  # Display file details
+            with col3:
+                if st.button("❌", key=f"delete_{index}"):  # Cross button for deletion
+                    os.remove(os.path.join(UPLOAD_FOLDER, row["File Name"]))
+                    st.success(f"❌ {row['File Name']} deleted successfully!")
+                    st.rerun()  # Refresh the page after deletion
     else:
         st.info("No files uploaded yet.")
 
