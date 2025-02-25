@@ -19,3 +19,5 @@ torch
 PyPDF2
 pymupdf
 pdfminer.six
+pypdf
+
