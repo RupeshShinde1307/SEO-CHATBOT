@@ -1,3 +1,4 @@
+
 # import streamlit as st
 # import os
 # from PIL import Image
@@ -6,55 +7,184 @@
 # from docx import Document
 # from pptx import Presentation
 # from io import BytesIO
-# import base64
-# from zipfile import ZipFile
 # import pandas as pd
+# from pathlib import Path
+# from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
+# from langchain.text_splitter import RecursiveCharacterTextSplitter
+# from langchain_huggingface import HuggingFaceEmbeddings
+# from langchain_community.vectorstores import FAISS
+# from langchain.schema import Document as LangchainDocument
+# from dotenv import load_dotenv, find_dotenv
+# import logging
 
-# # Set the path where uploaded files will be stored
+# # Configure logging
+# logging.basicConfig(level=logging.INFO)
+
+# # Load environment variables
+# load_dotenv(find_dotenv())
+
+# # Paths
 # UPLOAD_FOLDER = 'data/'
+# DB_FAISS_PATH = "vectorstore/db_faiss"
 # os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# # Function to handle login
-# def login():
-#     st.subheader("Login")
-#     username = st.text_input("Username")
-#     password = st.text_input("Password", type="password")
-#     if username == "admin" and password == "secret":
-#         st.success("You are logged in!")
-#         return True
+# # Set Tesseract OCR Path
+# pytesseract.pytesseract.tesseract_cmd = r"C:\\Users\\Rupesh Shinde\\Tesseract\\tesseract.exe"
+
+# # Function to extract text from images
+# def extract_text_from_image(image_path):
+#     try:
+#         img = cv2.imread(str(image_path))
+#         if img is None:
+#             logging.error(f"Failed to read image: {image_path}")
+#             return ""
+#         return pytesseract.image_to_string(img).strip()
+#     except Exception as e:
+#         logging.error(f"Error during OCR for {image_path}: {e}")
+#         return ""
+
+# # Function to load and vectorize documents
+# def vectorize_documents():
+#     logging.info("Starting document vectorization...")
+#     documents = []
+
+#     # Load PDFs
+#     pdf_loader = DirectoryLoader(UPLOAD_FOLDER, glob="*.pdf", loader_cls=PyPDFLoader)
+#     documents.extend(pdf_loader.load())
+
+#     # Load DOCX files
+#     for file in Path(UPLOAD_FOLDER).glob("*.docx"):
+#         doc = Document(file)
+#         text = "\n".join([para.text for para in doc.paragraphs])
+#         documents.append(LangchainDocument(page_content=text, metadata={"source": file.name}))
+
+#     # Load PPTX files
+#     for file in Path(UPLOAD_FOLDER).glob("*.pptx"):
+#         prs = Presentation(file)
+#         for i, slide in enumerate(prs.slides):
+#             text = "\n".join([shape.text for shape in slide.shapes if hasattr(shape, "text")])
+#             if text.strip():
+#                 documents.append(LangchainDocument(page_content=text, metadata={"source": file.name, "slide": i + 1}))
+
+#     # Load images (JPG and PNG)
+#     for image_file in Path(UPLOAD_FOLDER).rglob("*.jpg"):
+#         text = extract_text_from_image(image_file)
+#         if text:
+#             documents.append(LangchainDocument(page_content=text, metadata={"source": image_file.name}))
+
+#     for image_file in Path(UPLOAD_FOLDER).rglob("*.png"):
+#         text = extract_text_from_image(image_file)
+#         if text:
+#             documents.append(LangchainDocument(page_content=text, metadata={"source": image_file.name}))
+
+#     if documents:
+#         text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+#         text_chunks = text_splitter.split_documents(documents)
+#         embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+#         db = FAISS.from_documents(text_chunks, embedding_model)
+#         db.save_local(DB_FAISS_PATH)
+#         logging.info("Vector store updated successfully!")
+#         return True  # Return success status
 #     else:
-#         st.error("Invalid credentials.")
-#         return False
+#         logging.info("No new documents to vectorize.")
+#         return False  # Return failure status
 
 # # Function to handle file uploads
 # def upload_files():
 #     st.subheader("Upload Files")
-#     uploaded_files = st.file_uploader("Choose files", type=["pdf", "docx", "pptx", "jpg", "png", "txt"], accept_multiple_files=True)
-#     for uploaded_file in uploaded_files:
-#         file_path = os.path.join(UPLOAD_FOLDER, uploaded_file.name)
-#         with open(file_path, "wb") as f:
-#             f.write(uploaded_file.getbuffer())
-#         st.success(f"{uploaded_file.name} uploaded successfully!")
+#     uploaded_files = st.file_uploader(
+#         "Choose files", type=["pdf", "docx", "pptx", "jpg", "png", "txt"], accept_multiple_files=True
+#     )
+#     if uploaded_files:
+#         progress_bar = st.progress(0)
+#         total_files = len(uploaded_files)
+#         for i, uploaded_file in enumerate(uploaded_files):
+#             file_path = os.path.join(UPLOAD_FOLDER, uploaded_file.name)
+#             with open(file_path, "wb") as f:
+#                 f.write(uploaded_file.getbuffer())
+#             progress_bar.progress((i + 1) / total_files)
+#             st.success(f"✅ {uploaded_file.name} uploaded successfully! ({i + 1}/{total_files})")
+
+#         # Start vectorization
+#         st.info("Vectorization started. Please wait...")
+#         with st.spinner("Processing documents..."):
+#             success = vectorize_documents()  # Run vectorization in the main thread
+#         if success:
+#             st.success("✅ Vector store updated successfully!")
+#         else:
+#             st.info("No new documents to vectorize.")
+
+# # Function to display and manage uploaded files
+# def manage_files():
+#     st.subheader("Manage Files")
+#     files = os.listdir(UPLOAD_FOLDER)
+#     if files:
+#         file_data = [
+#             {
+#                 "File Name": file,
+#                 "Type": file.split(".")[-1].upper(),
+#                 "Size (KB)": round(os.path.getsize(os.path.join(UPLOAD_FOLDER, file)) / 1024, 2),
+#             }
+#             for file in files
+#         ]
+#         df = pd.DataFrame(file_data)
+#         st.dataframe(df, use_container_width=True)
+#         selected_file = st.selectbox("Select a file to manage", files)
+#         col1, col2 = st.columns(2)
+#         with col1:
+#             if st.button("Delete Selected File"):
+#                 os.remove(os.path.join(UPLOAD_FOLDER, selected_file))
+#                 st.error(f"❌ {selected_file} deleted successfully!")
+#                 st.rerun()
+#         with col2:
+#             with open(os.path.join(UPLOAD_FOLDER, selected_file), "rb") as f:
+#                 st.download_button(
+#                     label="Download Selected File",
+#                     data=f,
+#                     file_name=selected_file,
+#                     mime="application/octet-stream",
+#                 )
+#     else:
+#         st.info("No files uploaded yet.")
+
+# # Function to handle login
+# def login():
+#     st.sidebar.subheader("Login")
+#     username = st.sidebar.text_input("Username")
+#     password = st.sidebar.text_input("Password", type="password")
+#     if st.sidebar.button("Login"):
+#         with st.spinner("Logging in..."):  # Show a spinner during login
+#             if username == "admin" and password == "secret":
+#                 st.session_state.logged_in = True
+#                 st.sidebar.success("You are logged in!")
+#                 st.rerun()
+#             else:
+#                 st.sidebar.error("Invalid credentials.")
+
+# # Function to handle logout
+# def logout():
+#     if st.sidebar.button("Logout"):
+#         st.session_state.logged_in = False
+#         st.sidebar.success("You have been logged out!")
+#         st.rerun()
 
 # # Main function to run the app
 # def main():
 #     st.title("Admin Panel")
-    
-#     # Check if user is logged in
-#     if not login():
+#     if "logged_in" not in st.session_state:
+#         st.session_state.logged_in = False
+
+#     if not st.session_state.logged_in:
+#         login()
 #         st.stop()
-    
-#     # Display uploaded files (optional)
-#     files = os.listdir(UPLOAD_FOLDER)
-#     st.write("Uploaded Files:")
-#     for file in files:
-#         st.write(file)
-    
-#     # Upload files
+
+#     logout()
 #     upload_files()
+#     manage_files()
 
 # if __name__ == "__main__":
 #     main()
+
 
 
 
@@ -66,14 +196,158 @@ import pytesseract
 from docx import Document
 from pptx import Presentation
 from io import BytesIO
-import base64
-from zipfile import ZipFile
 import pandas as pd
+from pathlib import Path
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain.schema import Document as LangchainDocument
+from dotenv import load_dotenv, find_dotenv
+import logging
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
-# Set the path where uploaded files will be stored
+# Load environment variables
+load_dotenv(find_dotenv())
+
+# Paths
 UPLOAD_FOLDER = 'data/'
+DB_FAISS_PATH = "vectorstore/db_faiss"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Set Tesseract OCR Path
+pytesseract.pytesseract.tesseract_cmd = r"C:\\Users\\Rupesh Shinde\\Tesseract\\tesseract.exe"
+
+# Function to extract text from images
+def extract_text_from_image(image_path):
+    try:
+        img = cv2.imread(str(image_path))
+        if img is None:
+            logging.error(f"Failed to read image: {image_path}")
+            return ""
+        return pytesseract.image_to_string(img).strip()
+    except Exception as e:
+        logging.error(f"Error during OCR for {image_path}: {e}")
+        return ""
+
+# Function to load and vectorize documents
+def vectorize_documents():
+    logging.info("Starting document vectorization...")
+    documents = []
+
+    # Load PDFs
+    pdf_loader = DirectoryLoader(UPLOAD_FOLDER, glob="*.pdf", loader_cls=PyPDFLoader)
+    documents.extend(pdf_loader.load())
+
+    # Load DOCX files
+    for file in Path(UPLOAD_FOLDER).glob("*.docx"):
+        doc = Document(file)
+        text = "\n".join([para.text for para in doc.paragraphs])
+        documents.append(LangchainDocument(page_content=text, metadata={"source": file.name}))
+
+    # Load PPTX files
+    for file in Path(UPLOAD_FOLDER).glob("*.pptx"):
+        prs = Presentation(file)
+        for i, slide in enumerate(prs.slides):
+            text = "\n".join([shape.text for shape in slide.shapes if hasattr(shape, "text")])
+            if text.strip():
+                documents.append(LangchainDocument(page_content=text, metadata={"source": file.name, "slide": i + 1}))
+
+    # Load images (JPG and PNG)
+    for image_file in Path(UPLOAD_FOLDER).rglob("*.jpg"):
+        text = extract_text_from_image(image_file)
+        if text:
+            documents.append(LangchainDocument(page_content=text, metadata={"source": image_file.name}))
+
+    for image_file in Path(UPLOAD_FOLDER).rglob("*.png"):
+        text = extract_text_from_image(image_file)
+        if text:
+            documents.append(LangchainDocument(page_content=text, metadata={"source": image_file.name}))
+
+    if documents:
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+        text_chunks = text_splitter.split_documents(documents)
+        embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+        db = FAISS.from_documents(text_chunks, embedding_model)
+        db.save_local(DB_FAISS_PATH)
+        logging.info("Vector store updated successfully!")
+        return True  # Return success status
+    else:
+        logging.info("No new documents to vectorize.")
+        return False  # Return failure status
+
+# Function to handle file uploads
+def upload_files():
+    st.subheader("Upload Files")
+    uploaded_files = st.file_uploader(
+        "Choose files", type=["pdf", "docx", "pptx", "jpg", "png", "txt"], accept_multiple_files=True
+    )
+    if uploaded_files:
+        progress_bar = st.progress(0)
+        total_files = len(uploaded_files)
+        successful_uploads = 0
+
+        for i, uploaded_file in enumerate(uploaded_files):
+            file_path = os.path.join(UPLOAD_FOLDER, uploaded_file.name)
+
+            # Check if the file already exists
+            if os.path.exists(file_path):
+                st.warning(f"⚠️ File '{uploaded_file.name}' already exists. Skipping upload.")
+                continue
+
+            # Save the file
+            with open(file_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            successful_uploads += 1
+            progress_bar.progress((i + 1) / total_files)
+            st.success(f"✅ {uploaded_file.name} uploaded successfully! ({successful_uploads}/{total_files})")
+
+        if successful_uploads > 0:
+            # Start vectorization
+            st.info("Vectorization started. Please wait...")
+            with st.spinner("Processing documents..."):
+                success = vectorize_documents()  # Run vectorization in the main thread
+            if success:
+                st.success("✅ Vector store updated successfully!")
+            else:
+                st.info("No new documents to vectorize.")
+        else:
+            st.info("No new files were uploaded.")
+
+# Function to display and manage uploaded files
+def manage_files():
+    st.subheader("Manage Files")
+    files = os.listdir(UPLOAD_FOLDER)
+    if files:
+        file_data = [
+            {
+                "File Name": file,
+                "Type": file.split(".")[-1].upper(),
+                "Size (KB)": round(os.path.getsize(os.path.join(UPLOAD_FOLDER, file)) / 1024, 2),
+            }
+            for file in files
+        ]
+        df = pd.DataFrame(file_data)
+        st.dataframe(df, use_container_width=True)
+        selected_file = st.selectbox("Select a file to manage", files)
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Delete Selected File"):
+                os.remove(os.path.join(UPLOAD_FOLDER, selected_file))
+                st.error(f"❌ {selected_file} deleted successfully!")
+                st.rerun()
+        with col2:
+            with open(os.path.join(UPLOAD_FOLDER, selected_file), "rb") as f:
+                st.download_button(
+                    label="Download Selected File",
+                    data=f,
+                    file_name=selected_file,
+                    mime="application/octet-stream",
+                )
+    else:
+        st.info("No files uploaded yet.")
 
 # Function to handle login
 def login():
@@ -81,90 +355,31 @@ def login():
     username = st.sidebar.text_input("Username")
     password = st.sidebar.text_input("Password", type="password")
     if st.sidebar.button("Login"):
-        if username == "admin" and password == "secret":
-            st.session_state.logged_in = True  # Set login state to True
-            st.sidebar.success("You are logged in!")
-            st.rerun()  # Rerun the app to refresh the page
-        else:
-            st.sidebar.error("Invalid credentials.")
+        with st.spinner("Logging in..."):  # Show a spinner during login
+            if username == "admin" and password == "secret":
+                st.session_state.logged_in = True
+                st.sidebar.success("You are logged in!")
+                st.rerun()
+            else:
+                st.sidebar.error("Invalid credentials.")
 
 # Function to handle logout
 def logout():
     if st.sidebar.button("Logout"):
-        st.session_state.logged_in = False  # Reset login state
+        st.session_state.logged_in = False
         st.sidebar.success("You have been logged out!")
-        st.rerun()  # Rerun the app to refresh the page
-
-# Function to handle file uploads
-def upload_files():
-    st.subheader("Upload Files")
-    uploaded_files = st.file_uploader("Choose files", type=["pdf", "docx", "pptx", "jpg", "png", "txt"], accept_multiple_files=True)
-    if uploaded_files:
-        for uploaded_file in uploaded_files:
-            file_path = os.path.join(UPLOAD_FOLDER, uploaded_file.name)
-            with open(file_path, "wb") as f:
-                f.write(uploaded_file.getbuffer())
-            st.success(f"✅ {uploaded_file.name} uploaded successfully!")  # Green success alert
-        st.rerun()  # Rerun the app to refresh the file list
-
-# Function to display and manage uploaded files
-def manage_files():
-    st.subheader("Manage Files")
-    files = os.listdir(UPLOAD_FOLDER)
-    
-    if files:
-        # Create a DataFrame for all files
-        file_data = []
-        for file in files:
-            file_path = os.path.join(UPLOAD_FOLDER, file)
-            file_size = os.path.getsize(file_path) / 1024  # Size in KB
-            file_type = file.split(".")[-1].upper()  # Extract file extension
-            file_data.append({"File Name": file, "Type": file_type, "Size (KB)": round(file_size, 2)})
-        
-        df = pd.DataFrame(file_data)
-        
-        # Display the table
-        st.dataframe(df, use_container_width=True)
-        
-        # Add options to delete or download files
-        selected_file = st.selectbox("Select a file to manage", files)
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Delete Selected File"):
-                os.remove(os.path.join(UPLOAD_FOLDER, selected_file))
-                st.error(f"❌ {selected_file} deleted successfully!")  # Red error alert
-                st.rerun()  # Rerun the app to refresh the file list
-        with col2:
-            with open(os.path.join(UPLOAD_FOLDER, selected_file), "rb") as f:
-                st.download_button(
-                    label="Download Selected File",
-                    data=f,
-                    file_name=selected_file,
-                    mime="application/octet-stream"
-                )
-    else:
-        st.info("No files uploaded yet.")
+        st.rerun()
 
 # Main function to run the app
 def main():
     st.title("Admin Panel")
-    
-    # Initialize session state for login
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = False
-    
-    # Check if user is logged in
     if not st.session_state.logged_in:
         login()
-        st.stop()  # Stop the app if not logged in
-    
-    # Logout button
+        st.stop()
     logout()
-    
-    # Upload files
     upload_files()
-    
-    # Manage files (table for all files)
     manage_files()
 
 if __name__ == "__main__":
